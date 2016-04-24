@@ -30,13 +30,13 @@ app.post('/', (req, res, next) => { // for saving data
   mydb((db) => {
     db.collection(collectionName).insertOne(req.body, (err) => {
       if (err) next(err);
+      else res.send('success!');
     });
   }, () => {
     // error, not connected to database
     next();
   });
 
-  res.send('success!');
 });
 
 // run app
