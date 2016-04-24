@@ -1,0 +1,16 @@
+{
+  "esversion": 5,
+  "strict": "global",
+  "undef": true,
+  "unused": true,
+  "shadow": "outer",
+  "nonbsp": true,
+  "nocomma": true,
+  "latedef": true,
+  "futurehostile": true,
+  "eqeqeq": true,
+  "browser": true,
+  "devel": true,
+  "jquery": true,
+  "globals": ["console"]
+}
