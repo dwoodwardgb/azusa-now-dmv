@@ -65,6 +65,14 @@ function parseCommunityGroup(group) {
 function parsePersonFromRequest(req) {
   const person = {};
 
+  person.firstName = req.body.firstName;
+  person.lastName = req.body.lastName;
+  person.email = req.body.email;
+  person.phone = req.body.phone;
+  person.churchName = req.body.churchName;
+  person.churchCity = req.body.churchCity;
+  person.churchState = req.body.churchState;
+
   if (!req.body.communityGroups) {
     person.communityGroups = [];
   } else {
@@ -96,7 +104,7 @@ const csrfProtection = csrf({
 });
 
 // routing
-app.get('/', csrfProtection, (req, res) => {
+app.get('/azusa', csrfProtection, (req, res) => {
   const locals = { csrfToken: req.csrfToken() };
   res.render('form', locals);
 });
