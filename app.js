@@ -2,9 +2,13 @@
 
 // modules
 const express = require('express');
+const helmet = require('helmet');
 const path = require('path');
 const logger = require('morgan');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const engine = require('ejs-mate');
+const csrf = require('csurf');
 
 const app = express();
 
@@ -12,53 +16,153 @@ const app = express();
 const mydb = require('./db')(app);
 
 // app config
-const port = 3000;
+const port = 3001;
 const staticDirName = 'public';
 
+app.use(helmet());
 app.use(logger('dev')); // logger
+app.use(bodyParser.json()); // json parser
 app.use(bodyParser.urlencoded({ extended: true })); // url body parser
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, staticDirName))); // static dir
 
-// for use with checkbox inputs
-function checkboxToBool(obj, propName) {
-  if (obj[propName] === 'on') {
-    obj[propName] = true;
-  } else {
-    obj[propName] = false;
+app.engine('ejs', engine);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// adds flash object to the response
+app.use((req, res, next) => {
+  if (!res.locals.flash) {
+    res.locals.flash = {
+      error: '',
+      success: '',
+      notice: ''
+    };
   }
+
+  next();
+});
+
+// for use with checkbox inputs
+function checkboxToBool(checkbox) {
+  return checkbox === 'on';
 }
 
-// routing
-app.post('/', (req, res, next) => { // for saving data
-  console.log(req.params);
-  console.log(req.body);
+function parseCommunityGroup(group) {
+  const ret = {};
 
-  // add the community groups field if missing
+  ret.name = group.name;
+  ret.addrLine1 = group.addrLine1;
+  ret.addrLine2 = group.addrLine2;
+  ret.city = group.city;
+  ret.state = group.state;
+  ret.zip = group.zip;
+  ret.leader = checkboxToBool(group.leader);
+
+  return ret;
+}
+
+function parsePersonFromRequest(req) {
+  const person = {};
+
   if (!req.body.communityGroups) {
-    req.body.communityGroups = [];
+    person.communityGroups = [];
+  } else {
+    person.communityGroups = req.body.communityGroups.map(parseCommunityGroup);
   }
 
-  checkboxToBool(req.body, 'goesToChurch');
-  checkboxToBool(req.body, 'partOfGroup');
-  req.body.communityGroups.forEach(
-    (group) => checkboxToBool(group, 'leader'));
+  if (!req.body.gender) {
+    person.gender = '';
+  } else {
+    person.gender = req.body.gender;
+  }
 
-  res.send('success!');
+  person.goesToChurch = checkboxToBool(req.body.goesToChurch);
+  person.partOfGroup = checkboxToBool(req.body.partOfGroup);
+  person.wantsToConnect = checkboxToBool(req.body.wantsToConnect);
 
-  // TODO ???
+  if (!person.wantsToConnect) {
+    person.contactPreference = '';
+  } else {
+    person.contactPreference = req.body.contactPreference;
+  }
 
-  // const collectionName = 'people';
-  // mydb((db) => {
-  //   db.collection(collectionName).insertOne(req.body, (err) => {
-  //     if (err) next(err);
-  //     else res.send('success!');
-  //   });
-  // }, () => {
-  //   // error, not connected to database
-  //   next();
-  // });
+  return person;
+}
 
+const csrfProtection = csrf({
+  cookie: true,
+  ignoreMethods: ['GET', 'HEAD', 'OPTIONS']
 });
+
+// routing
+app.get('/', csrfProtection, (req, res) => {
+  const locals = { csrfToken: req.csrfToken() };
+  res.render('form', locals);
+});
+
+app.post('/', csrfProtection, (req, res) => { // for saving data
+  console.log('in the post');
+
+  console.log('in the post2');
+  const person = parsePersonFromRequest(req);
+
+  const collectionName = 'people';
+  mydb((db) => {
+    db.collection(collectionName).insertOne(person, (err) => {
+      if (err) {
+        console.error('error saving person:');
+        console.error(req.body);
+        console.error(err);
+        res.locals.flash.error = 'An error occurred while attempting to save your information :(';
+      } else {
+        res.locals.flash.success = 'Your info has been saved successfully!';
+      }
+
+      console.log('in the post3');
+      res.render('save', {});
+    });
+  }, () => {
+    // error, not connected to database
+    console.error('error saving person:');
+    console.error(req.body);
+    console.error('not connected to database');
+    res.locals.flash.error = 'Your information could not be saved :(';
+    res.render('save', {});
+  });
+});
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use((err, req, res, next) => { // jshint ignore: line
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use((err, req, res, next) => { // jshint ignore: line
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: null
+  });
+});
+
 
 // run app
 app.listen(port, () => {

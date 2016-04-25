@@ -9,6 +9,16 @@ function synchCheckboxAndDivVisibility(checkbox, div) {
 }
 
 $(document).ready(function () {
+  // contact preference logic --------------------------------------------------
+
+  var wantsToConnectCheckbox = $('#wantsToConnectCheckbox');
+  var contactPreferenceDiv = $('#contactPreferenceDiv');
+
+  wantsToConnectCheckbox.click(function () {
+    contactPreferenceDiv.toggle('hidden');
+  });
+
+  synchCheckboxAndDivVisibility(wantsToConnectCheckbox, contactPreferenceDiv);
 
   // states select templating --------------------------------------------------
 
