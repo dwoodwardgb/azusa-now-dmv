@@ -57,10 +57,13 @@ $(document).ready(function () {
     var count = 0;
 
     function add() {
+      // cloning template
       var newGroup = communityGroupTemplate.clone();
       newGroup.removeAttr('id');
       newGroup.removeAttr('hidden');
       newGroup.find('select').addClass('changeName');
+
+      // setting names straight
 
       newGroup.find('.changeName').each(function (_, element) {
         element = $(element);
@@ -69,9 +72,41 @@ $(document).ready(function () {
         element.removeClass('changeName');
       });
 
+      // adding remover button
+
       newGroup.find('.remover').click(function () {
         newGroup.remove();
       });
+
+      // connecting with group leaders logic
+
+      var leadersWantToConnectCheckbox = newGroup.find('.leadersWantToConnect');
+      var leadersConnectDiv = newGroup.find('.leadersConnectDiv');
+
+      leadersWantToConnectCheckbox.click(function () {
+        leadersConnectDiv.toggle('hidden');
+      });
+
+      synchCheckboxAndDivVisibility(leadersWantToConnectCheckbox,
+                                    leadersConnectDiv);
+
+      var contactForLeadersDiv = newGroup.find('.contactForLeadersDiv');
+      var showHideOptions = {
+        duration: 400,
+        easing: 'swing',
+        queue: true
+      };
+
+      newGroup.find('.contactForLeadersRadio').change(function () {
+        var curVal = $(this).val();
+        if (curVal === 'yes') {
+          contactForLeadersDiv.hide(showHideOptions);
+        } else {
+          contactForLeadersDiv.show(showHideOptions);
+        }
+      });
+
+      // actually adding the new content
 
       container.append(newGroup);
       count += 1;

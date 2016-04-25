@@ -59,6 +59,18 @@ function parseCommunityGroup(group) {
   ret.zip = group.zip;
   ret.leader = checkboxToBool(group.leader);
 
+  ret.leadersWantToConnect = checkboxToBool(group.leadersWantToConnect);
+  if (ret.leadersWantToConnect) {
+    ret.contactForLeaders = (group.contactForLeaders === 'yes');
+    if (!ret.contactForLeaders) {
+      ret.leaderName = group.leaderName;
+      ret.leaderEmail = group.leaderEmail;
+      ret.leaderContactPreference = group.leaderContactPreference;
+    }
+  }
+
+  console.log(ret);
+
   return ret;
 }
 
@@ -110,9 +122,6 @@ app.get('/azusa', csrfProtection, (req, res) => {
 });
 
 app.post('/', csrfProtection, (req, res) => { // for saving data
-  console.log('in the post');
-
-  console.log('in the post2');
   const person = parsePersonFromRequest(req);
 
   const collectionName = 'people';
@@ -122,12 +131,12 @@ app.post('/', csrfProtection, (req, res) => { // for saving data
         console.error('error saving person:');
         console.error(req.body);
         console.error(err);
-        res.locals.flash.error = 'An error occurred while attempting to save your information :(';
+        res.locals.flash.error =
+          'An error occurred while attempting to save your information :(';
       } else {
         res.locals.flash.success = 'Your info has been saved successfully!';
       }
 
-      console.log('in the post3');
       res.render('save', {});
     });
   }, () => {
@@ -141,7 +150,7 @@ app.post('/', csrfProtection, (req, res) => { // for saving data
 });
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   const err = new Error('Not Found');
   err.status = 404;
   next(err);
