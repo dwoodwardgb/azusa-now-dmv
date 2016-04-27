@@ -1,0 +1,27 @@
+<% layout('app_wide') %>
+
+<!-- Table -->
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Gender</th>
+      <th>Connect?</th>
+      <th>Church</th>
+      <th>Community Group(s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% people.forEach((person) => { %>
+      <tr class="personRow">
+        <td><%= person.firstName + ' ' + person.lastName %></td>
+        <td><%= person.gender %></td>
+        <td><%= person.wantsToConnect ? 'Yes' : 'No' %></td>
+        <td><%= person.churchName + ' - ' + person.churchCity + ', ' + person.churchState %></td>
+        <td><%= person.communityGroups.map((g) => g.name).join(', ') %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<script src="../js/data.js"></script>

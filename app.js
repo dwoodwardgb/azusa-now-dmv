@@ -149,6 +149,24 @@ app.post('/', csrfProtection, (req, res) => { // for saving data
   });
 });
 
+app.get('/azusa/data', (req, res) => {
+  const collectionName = 'people';
+  mydb((db) => {
+    db.collection(collectionName).find().toArray((err, people) => {
+      if (err) {
+        res.locals.flash.error = 'An error occurred while processing your request';
+        people = [];
+      }
+
+      res.render('data', { people: people });
+    });
+  }, () => {
+    console.error('not connected to database');
+    res.locals.flash.error = 'An error occurred while processing your request';
+    res.render('data', {});
+  });
+});
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   const err = new Error('Not Found');
