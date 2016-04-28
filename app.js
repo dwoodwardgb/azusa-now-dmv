@@ -69,8 +69,6 @@ function parseCommunityGroup(group) {
     }
   }
 
-  console.log(ret);
-
   return ret;
 }
 
@@ -100,11 +98,22 @@ function parsePersonFromRequest(req) {
   person.goesToChurch = checkboxToBool(req.body.goesToChurch);
   person.partOfGroup = checkboxToBool(req.body.partOfGroup);
   person.wantsToConnect = checkboxToBool(req.body.wantsToConnect);
+  person.attendedEvent = checkboxToBool(req.body.attendedEvent);
 
   if (!person.wantsToConnect) {
     person.contactPreference = '';
   } else {
     person.contactPreference = req.body.contactPreference;
+  }
+
+  if (person.attendedEvent) {
+    if (!req.body.testimony) {
+      person.testimony = '';
+    } else {
+      person.testimony = req.body.testimony;
+    }
+  } else {
+    person.testimony = '';
   }
 
   return person;
