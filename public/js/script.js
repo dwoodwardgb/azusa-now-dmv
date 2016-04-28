@@ -147,6 +147,17 @@ $(document).ready(function () {
     return true;
   });
 
+  // testimonies form logic ----------------------------------------------------
+
+  var attendedEventCheckbox = $('#attendedEventCheckbox');
+  var testimoniesFormDiv = $('#testimoniesFormDiv');
+
+  attendedEventCheckbox.on('click', function () {
+    testimoniesFormDiv.toggle('hidden');
+  });
+
+  synchCheckboxAndDivVisibility(attendedEventCheckbox, testimoniesFormDiv);
+
   // ---------------------------------------------------------------------------
 
 });
