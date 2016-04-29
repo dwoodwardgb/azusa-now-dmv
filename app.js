@@ -65,6 +65,7 @@ function parseCommunityGroup(group) {
     if (!ret.contactForLeaders) {
       ret.leaderName = group.leaderName;
       ret.leaderEmail = group.leaderEmail;
+      ret.leaderPhone = group.leaderPhone;
       ret.leaderContactPreference = group.leaderContactPreference;
     }
   }
