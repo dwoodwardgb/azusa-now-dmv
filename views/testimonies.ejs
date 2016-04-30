@@ -1,0 +1,11 @@
+<% layout('app_wide') %>
+
+<table class="table table-hover">
+  <tbody>
+    <% people.forEach((person) => { %>
+      <tr>
+        <td><%= person.firstName[0] + '.' + person.lastName + '. : ' + person.testimony %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>

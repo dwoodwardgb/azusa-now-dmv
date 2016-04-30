@@ -159,9 +159,17 @@ app.post('/', csrfProtection, (req, res) => { // for saving data
   });
 });
 
+function MydbErrCb(res, templateName, locals) {
+  return () => {
+    console.error('not connected to database');
+    res.locals.flash.error = 'An error occurred while processing your request';
+    res.render(templateName, locals);
+  };
+}
+
 app.get('/azusa/data', (req, res) => {
-  const collectionName = 'people';
   mydb((db) => {
+    const collectionName = 'people';
     db.collection(collectionName).find().toArray((err, people) => {
       if (err) {
         res.locals.flash.error = 'An error occurred while processing your request';
@@ -170,11 +178,28 @@ app.get('/azusa/data', (req, res) => {
 
       res.render('data', { people: people });
     });
-  }, () => {
-    console.error('not connected to database');
-    res.locals.flash.error = 'An error occurred while processing your request';
-    res.render('data', {});
-  });
+  }, MydbErrCb(res, 'data', {}));
+});
+
+app.get('/azusa/testimonies', (req, res) => {
+  mydb((db) => {
+    const collectionName = 'people';
+    const queryObj = {
+      testimony: {
+        $exists: true,
+        $ne: ''
+      }
+    };
+
+    db.collection(collectionName).find(queryObj).toArray((err, people) => {
+      if (err) {
+        res.locals.flash.error = 'An error occurred while processing your request';
+        people = [];
+      }
+
+      res.render('testimonies', { people: people });
+    });
+  }, MydbErrCb(res, 'testimonies', {}));
 });
 
 // catch 404 and forward to error handler
